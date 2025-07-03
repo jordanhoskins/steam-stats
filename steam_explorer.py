@@ -26,6 +26,7 @@ def load_games_df() -> pd.DataFrame:
 # Do this once, could probably keep in st.session_state
 games_df = load_games_df()
 
+
 def get_user_reviews_helper(steam_app_id, params) -> dict:
     """Query steam to get user reviews"""
     user_review_url = f'https://store.steampowered.com/appreviews/{steam_app_id}'
@@ -85,6 +86,7 @@ def parse_reviews(reviews, title) -> pd.DataFrame:
     df = pd.DataFrame(data)
     df["playtime_hours"] = df.playtime / 60
     return df
+
 
 def playtime_hist(df, liked="liked") -> plt.Figure:
     """Create histogram of playtime stats, return figure for plotting with streamlit.
