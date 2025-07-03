@@ -102,7 +102,7 @@ def playtime_hist(df, liked="liked") -> plt.Figure:
     ax.axvline(mean, linewidth=1, color="g", label="mean")
     fig = sns.histplot(df, x="playtime_hours", stat="count", ax=ax, legend=True)
     ax.legend()
-    st.write(f"Players who {liked} {name} played between **{mid_range} hours**, averaging **{median} hours**")
+    st.write(f"🕰 Players who {liked} **{name}** played between **{mid_range} hours**, averaging **{median} hours**")
     return fig.get_figure()
 
 
@@ -132,12 +132,25 @@ def main():
         ready = st.form_submit_button(f"Search **{game_name}** reviews")
         if ready:
             review_score = games_df.loc[chosen_idx].positive/(games_df.loc[chosen_idx].positive + games_df.loc[chosen_idx].negative)
-            st.write(f"{game_name} has a Steam review score of **{round(review_score*100, 2)}%** as of 7/3/2025")
+            init_price = float(games_df.loc[chosen_idx].initialprice)
+            cur_price = float(games_df.loc[chosen_idx].price)
             reviews = get_user_reviews(chosen_game["appid"], params, max_revs=total_reviews)
             review_df = parse_reviews(reviews, chosen_game["name"])
             pos, neg = review_df[review_df.voted_up == True], review_df[review_df.voted_up == False]
+
+            pos_median_playtime = round(pos.playtime_hours.median())
+            cost_pos = round(cur_price / pos_median_playtime)/100
+
+            neg_median_playtime = round(neg.playtime_hours.median())
+            cost_neg = round(cur_price / neg_median_playtime)/100
+
+            st.write(f"💯 {game_name} has a Steam review score of **{round(review_score*100, 2)}%** as of 7/3/2025")
             liked = playtime_hist(pos)
             did_not_like = playtime_hist(neg, liked="did not like")
+            st.write(
+                f"🤑 At the current price of **\${cur_price/100}**, the average cost per hour among users who enjoyed the game is **${cost_pos}/hr**"
+            )
+            st.write(f"💸 Players who didn't like **{game_name}** spent an average of **${cost_neg}/hr** to find that out.")
 
             fig1 = sns.catplot(
                 review_df,
