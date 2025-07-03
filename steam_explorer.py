@@ -103,7 +103,7 @@ def main():
     st.write("Steam Reviews Explorer")
     st.write(f"""
     Steps to use: \n
-        1. In the sidebar, enter a game to search. Results will populate below. \n 
+        1. In the sidebar, enter a game to search. Results based on the 1000 most popular games on Steam will populate below. \n 
         2. Select the game you want from the dropdown. \n 
         3. Click the "Search <game> reviews" button. \n
         4. Enjoy the graphs.
