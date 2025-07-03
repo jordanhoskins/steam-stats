@@ -101,12 +101,21 @@ def player_stats(df, liked="liked"):
 
 def main():
     st.write("Steam Reviews Explorer")
+    st.write(f"""
+    Steps to use: \n
+        1. In the sidebar, enter a game to search. Results will populate below. \n 
+        2. Select the game you want from the dropdown. \n 
+        3. Click the "Search <game> reviews" button. \n
+        4. Enjoy the graphs.
+    """
+    )
     with st.sidebar:
         game_title = st.text_input("Search game")
-        total_reviews = st.number_input("Max number of reviews", 100, 1000, step=100)
         steam_ids = get_steam_app_id(games_df, game_title)
         chosen_idx = st.selectbox("Found these:", steam_ids.index, format_func=lambda x: steam_ids.loc[x, 'name'])
         chosen_game = games_df.loc[chosen_idx]
+        total_reviews = st.number_input("Max number of reviews", 100, 500, step=100)
+
 
     with st.form("get_reviews") as ff:
         game_name = chosen_game["name"]
@@ -128,11 +137,9 @@ def main():
                 kind="swarm",
             )
             st.pyplot(fig1)
-
             col1, col2 = st.columns(2)
             col1.pyplot(liked)
             col2.pyplot(did_not_like)
-
 
 
 if __name__ == "__main__":
