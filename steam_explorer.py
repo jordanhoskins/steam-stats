@@ -102,6 +102,8 @@ def player_stats(df, liked="liked"):
 def main():
     st.title("🚂 Steam Reviews Explorer 🚂")
     st.write("I made this to understand what I'm getting into when purchasing a new game.")
+    st.write("How long are players spending with the game?")
+    st.write("What is the difference in playtime between players who liked the game and those who did not?")
     st.write(f"""
     ## Steps to use: \n
         1. In the sidebar, enter a game to search. Results based on the 1000 most popular games on Steam will populate below. \n 
