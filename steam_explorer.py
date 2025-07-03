@@ -131,6 +131,8 @@ def main():
         game_name = chosen_game["name"]
         ready = st.form_submit_button(f"Search **{game_name}** reviews")
         if ready:
+            review_score = games_df.loc[chosen_idx].positive/(games_df.loc[chosen_idx].positive + games_df.loc[chosen_idx].negative)
+            st.write(f"{game_name} has a Steam review score of **{round(review_score*100, 2)}%** as of 7/3/2025")
             reviews = get_user_reviews(chosen_game["appid"], params, max_revs=total_reviews)
             review_df = parse_reviews(reviews, chosen_game["name"])
             pos, neg = review_df[review_df.voted_up == True], review_df[review_df.voted_up == False]
