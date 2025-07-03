@@ -14,7 +14,8 @@ params = {
 }
 
 
-def load_games_df():
+def load_games_df() -> pd.DataFrame:
+    """Load the static table of game ids, titles, and cost into memory as a dataframe"""
     with open("steam-top-1000.json") as ifp:
         d = json.loads(ifp.read())
     d_as_array = [v for k, v in d.items()]
@@ -22,9 +23,11 @@ def load_games_df():
     df["name_lowercase"] = df.name.apply(lambda x: x.lower())
     return df
 
+# Do this once, could probably keep in st.session_state
 games_df = load_games_df()
 
 def get_user_reviews_helper(steam_app_id, params) -> dict:
+    """Query steam to get user reviews"""
     user_review_url = f'https://store.steampowered.com/appreviews/{steam_app_id}'
     req_user_review = requests.get(
         user_review_url,
@@ -32,49 +35,50 @@ def get_user_reviews_helper(steam_app_id, params) -> dict:
     )
 
     if req_user_review.status_code != 200:
-        print(f'Failed to get response. Status code: {req_user_review.status_code}')
-        return {"success": 2}
+        st.write(f'Failed to get response. Status code: {req_user_review.status_code}')
+        raise ValueError
 
     try:
         reviews_response = req_user_review.json()
-    except:
-        return {"success": 2}
+    except Exception as exc:
+        st.write(f"Encountered exception: {exc}")
+        raise exc
 
     return reviews_response
 
 
-def get_user_reviews(steam_app_id, params, max_revs = 100) -> list:
-
+def get_user_reviews(steam_app_id: int, params: dict, max_revs = 100) -> list:
+    """Iterate through pages of review responses and return them as a list
+    Args:
+        steam_app_id (int): The unique identifier for the game according to Steam
+        params (dict): Dictionary of parameters for querying. These are passed to `get_reviews_helper` and are used to
+            advance the current page in the response, as well as set the max reviews
+        max_revs (int): Maximum number of reviews to fetch
+    """
     revs = []
     while len(revs) < max_revs - 1:
         response = get_user_reviews_helper(steam_app_id, params)
         cursor = response.get("cursor")
         if not cursor:
             break
-
         revs.extend(response["reviews"])
-
         # set cursor to move to the next page
         params['cursor'] = cursor
-
     return revs
-
 
 
 def get_steam_app_id(df, search_str):
     games = df[df.name_lowercase.str.contains(search_str.lower())]
     return games[["name", "appid"]]
 
-def get_name(s):
-    st.write(s)
-    return s.name
 
-
-def parse_reviews(reviews, title):
+def parse_reviews(reviews, title) -> pd.DataFrame:
+    """Parse the output of the reviews jsons into a DataFrame"""
     data = [
         {
             "playtime": i["author"]["playtime_forever"],
-            "voted_up":i["voted_up"], "title": title
+            "voted_up":i["voted_up"],
+            "title": title
         }
         for i in reviews
     ]
@@ -82,9 +86,10 @@ def parse_reviews(reviews, title):
     df["playtime_hours"] = df.playtime / 60
     return df
 
-def player_stats(df, liked="liked"):
-
-
+def playtime_hist(df, liked="liked") -> plt.Figure:
+    """Create histogram of playtime stats, return figure for plotting with streamlit.
+    Print summary stats along the way.
+    """
     summary_stats = df.playtime_hours.describe()
     mean = round(summary_stats["mean"])
     median = round(df.playtime_hours.median())
@@ -127,8 +132,8 @@ def main():
             reviews = get_user_reviews(chosen_game["appid"], params, max_revs=total_reviews)
             review_df = parse_reviews(reviews, chosen_game["name"])
             pos, neg = review_df[review_df.voted_up == True], review_df[review_df.voted_up == False]
-            liked = player_stats(pos)
-            did_not_like = player_stats(neg, liked="did not like")
+            liked = playtime_hist(pos)
+            did_not_like = playtime_hist(neg, liked="did not like")
 
             fig1 = sns.catplot(
                 review_df,
