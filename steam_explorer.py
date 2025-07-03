@@ -100,9 +100,10 @@ def player_stats(df, liked="liked"):
 
 
 def main():
-    st.write("Steam Reviews Explorer")
+    st.title("🚂 Steam Reviews Explorer 🚂")
+    st.write("I made this to understand what I'm getting into when purchasing a new game.")
     st.write(f"""
-    Steps to use: \n
+    ## Steps to use: \n
         1. In the sidebar, enter a game to search. Results based on the 1000 most popular games on Steam will populate below. \n 
         2. Select the game you want from the dropdown. \n 
         3. Click the "Search <game> reviews" button. \n
@@ -119,7 +120,7 @@ def main():
 
     with st.form("get_reviews") as ff:
         game_name = chosen_game["name"]
-        ready = st.form_submit_button(f"Search {game_name} reviews")
+        ready = st.form_submit_button(f"Search **{game_name}** reviews")
         if ready:
             reviews = get_user_reviews(chosen_game["appid"], params, max_revs=total_reviews)
             review_df = parse_reviews(reviews, chosen_game["name"])
